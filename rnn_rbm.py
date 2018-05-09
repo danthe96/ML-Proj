@@ -29,17 +29,23 @@ def rnnrbm(d):
 
     # Here we set aside the space for each of the variables.
     # We intialize these variables when we load saved parameters in rnn_rbm_train.py or rnn_rbm_generate.py
-    W = tf.Variable(tf.zeros([n_visible, n_hidden]), name="W")
     Wuh = tf.Variable(tf.zeros([n_hidden_recurrent, n_hidden]), name="Wuh")
     Wux = tf.Variable(tf.zeros([n_hidden_recurrent, n_visible]), name="Wux")
     Wxu = tf.Variable(tf.zeros([n_visible, n_hidden_recurrent]), name="Wxu")
     Wuu = tf.Variable(tf.zeros([n_hidden_recurrent, n_hidden_recurrent]), name="Wuu")
-    bh = tf.Variable(tf.zeros([1, n_hidden]), name="bh")
-    bx = tf.Variable(tf.zeros([1, n_visible]), name="bx")
     bu = tf.Variable(tf.zeros([1, n_hidden_recurrent]), name="bu")
     u0 = tf.Variable(tf.zeros([1, n_hidden_recurrent]), name="u0")
     BH_t = tf.Variable(tf.zeros([1, n_hidden]), name="BH_t")
     BX_t = tf.Variable(tf.zeros([1, n_visible]), name="BX_t")
+
+    W = [None] * len(self.layer_shape)
+    bh = [None] * len(self.layer_shape)  # Forward
+    bx = [None] * len(self.layer_shape)  # Backward
+    # W[0] irrelevant
+    for i in range(0, len(ebm_layer_shape)):
+      W[i] = tf.Variable(tf.zeros((ebm_layer_shape[i - 1], ebm_layer_shape[i])))
+      bh[i] = tf.Variable(tf.zeros((ebm_layer_shape[i], 1)), name='bh' + str(i))
+      bx[-i - 1] = tf.Variable(tf.zeros((ebm_layer_shape[i], 1)), name='bx' + str(i))
 
     def rnn_recurrence(u_tmin1, sl):
         # Iterate through the data in the batch and generate the values of the RNN hidden nodes
